@@ -14,7 +14,7 @@ exports.createTask = async (ctx) => {
         urgency: ctx.request.body.urgency
     })
     if (!taskOne) {
-        throw new Error('Tasks failed to be created.')
+        throw new Error('Tasks failed to be created.');
     } else {
         ctx.body = { taskOne };
     }
