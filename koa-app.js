@@ -11,12 +11,12 @@ var jwt = require('koa-jwt');
 const fs = require('fs');
 const v1Api = '/api/v1';
 const TokenGenerator = require('./controller/token');
-const jwtToken = require('jsonwebtoken');
-
-
+const config = require('./config');
+const authenticate = require('./controller/authenticate');
 // const tokenGenerator = new TokenGenerator('a', 'a', { algorithm: 'HS256', keyid: '1', noTimestamp: false, expiresIn: '2m', notBefore: '2s' })
 // token = tokenGenerator.sign({ myclaim: 'something' }, { audience: 'myaud', issuer: 'myissuer', jwtid: '1', subject: 'user' })
 // setTimeout(function () {
+//   console.log('token');
 //   token2 = tokenGenerator.refresh(token, { verify: { audience: 'myaud', issuer: 'myissuer' }, jwtid: '2' })
 //   console.log(jwtToken.decode(token, { complete: true }))
 //   console.log(jwtToken.decode(token2, { complete: true }))
@@ -27,7 +27,7 @@ const jwtToken = require('jsonwebtoken');
 mongoose.Promise = require('bluebird');
 
 mongoose
-  .connect('mongodb://104.199.252.148:27017/exampleDb')
+  .connect(config.database)
   .then((response) => {
     console.log('mongo connection created')
   })
@@ -42,7 +42,7 @@ app.use(bodyParser());
 app.use(convert(koaRes()));
 
 //401
-// Custom 401 handling if you don't want to expose koa-jwt errors to users
+//Custom 401 handling if you don't want to expose koa-jwt errors to users
 // app.use(function (ctx, next) {
 //   return next().catch((err) => {
 //     if (401 == err.status) {
@@ -54,17 +54,21 @@ app.use(convert(koaRes()));
 //   });
 // });
 
-// // Middleware below this line is only reached if JWT token is valid
-// app.use(jwt({ secret: 'shared-secret' }));
+// Middleware below this line is only reached if JWT token is valid
+//app.use(jwt({ secret: 'shared-secret' }));
 
-// // Protected middleware
+// Protected middleware
 // app.use(function (ctx) {
-//   if (ctx.url.match(/^\/api/)) {
-//     ctx.body = 'protected\n';
+//   let token = ctx.header.token;
+//   let countPathTokenDesc = token.split('-').length;
+//   if (ctx.url.match(/^\/api/) && countPathTokenSrc != countPathTokenDesc) {
+//     ctx.body = 'protected';
 //   }
 // });
 
 
+//authorizaetion
+app.use(route.post(v1Api + '/authenticate', authenticate.logon));
 // response
 app.use(route.get(v1Api + '/', index));
 app.use(route.get(v1Api + '/about', about));
